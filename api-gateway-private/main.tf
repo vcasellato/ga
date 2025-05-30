@@ -244,7 +244,7 @@ resource "aws_iam_role" "api_gateway_cloudwatch" {
 # IAM Policy for API Gateway CloudWatch Logging
 resource "aws_iam_role_policy" "api_gateway_cloudwatch" {
   name_prefix = "${substr(var.name, 0, 20)}-apigw-cw-"
-  role       = aws_iam_role.api_gateway_cloudwatch.id
+  role        = aws_iam_role.api_gateway_cloudwatch.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -310,9 +310,9 @@ resource "aws_api_gateway_method_settings" "main" {
   method_path = "*/*"
 
   settings {
-    metrics_enabled    = true
-    logging_level     = "INFO"  # ERROR, INFO, or OFF
-    data_trace_enabled = true
+    metrics_enabled        = true
+    logging_level          = "INFO" # ERROR, INFO, or OFF
+    data_trace_enabled     = true
     throttling_rate_limit  = var.throttle_rate_limit
     throttling_burst_limit = var.throttle_burst_limit
   }
@@ -403,10 +403,10 @@ resource "aws_security_group" "nlb_fallback" {
 # NLB como fallback (se Private DNS não funcionar)
 resource "aws_lb" "internal_nlb_fallback" {
   count              = var.create_nlb_fallback ? 1 : 0
-  name               = "${substr(var.name, 0, 18)}-nlb-fb"  # Máximo 32 chars
+  name               = "${substr(var.name, 0, 18)}-nlb-fb" # Máximo 32 chars
   internal           = true
   load_balancer_type = "network"
-  subnets            = var.subnet_ids  # Usa as mesmas subnets do VPC Endpoint
+  subnets            = var.subnet_ids # Usa as mesmas subnets do VPC Endpoint
   security_groups    = [aws_security_group.nlb_fallback[0].id]
 
   enable_deletion_protection = false
@@ -419,7 +419,7 @@ resource "aws_lb" "internal_nlb_fallback" {
 # Target Group para NLB apontando para ALB
 resource "aws_lb_target_group" "alb_targets" {
   count       = var.create_nlb_fallback ? 1 : 0
-  name        = "${substr(var.name, 0, 20)}-alb-tg"  # Máximo 32 chars
+  name        = "${substr(var.name, 0, 20)}-alb-tg" # Máximo 32 chars
   port        = 443
   protocol    = "TCP"
   vpc_id      = var.vpc_id
@@ -428,8 +428,8 @@ resource "aws_lb_target_group" "alb_targets" {
   health_check {
     enabled             = true
     healthy_threshold   = 2
-    protocol            = "HTTPS"  # Mudança: TCP → HTTPS para ALB target
-    path                = "/proxy" # Path que o ALB aceita
+    protocol            = "TCP"
+    port                = "443"
     unhealthy_threshold = 2
     interval            = 30
     timeout             = 10
